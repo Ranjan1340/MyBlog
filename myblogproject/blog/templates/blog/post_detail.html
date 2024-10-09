@@ -1,0 +1,79 @@
+{% extends 'blog/base.html' %}
+
+{% block title %}{{ post.title }}{% endblock %}
+
+{% block content %}
+<div style="margin-left: 40px;">  <!-- Added left margin -->
+    <h1>{{ post.title|slice:":1"|upper }}{{ post.title|slice:"1:"|lower }}</h1>  <!-- Capitalization for title -->
+    <p>{{ post.created_at }} by {{ post.author }}</p>
+    <p>{{ post.content }}</p>
+
+    <!-- Display Tags -->
+    <p><strong>Tags:</strong>
+        {% for tag in post.tags.all %}
+            <span class="badge bg-secondary">{{ tag }}</span>
+        {% endfor %}
+    </p>
+</div>
+
+<h2 style="margin-left: 40px;">Comments</h2>
+<ul style="margin-left: 40px;">
+    {% for comment in comments %}
+        <li>
+            <p>{{ comment.content }} - <strong>{{ comment.author }}</strong></p>
+            <p>
+                Likes: <span id="like-count-{{ comment.id }}">{{ comment.total_likes }}</span>
+                <button class="like-btn" data-id="{{ comment.id }}">
+                    {% if user in comment.likes.all %}
+                        Unlike
+                    {% else %}
+                        Like
+                    {% endif %}
+                </button>
+            </p>
+        </li>
+    {% endfor %}
+</ul>
+
+<section class="share-post" style="margin-left: 40px;">
+    {% if sent %}
+        <p>Your post has been shared successfully!</p>
+    {% else %}
+        <form method="POST" action="{% url 'share_post' post.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Share this post</button>
+        </form>
+    {% endif %}
+</section>
+
+<h2 style="margin-left: 40px;">Add a Comment</h2>
+<form method="POST" style="margin-left: 40px;">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-secondary">Submit</button>
+</form>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function(){
+        $(".like-btn").click(function(){
+            var commentId = $(this).data('id');
+            var $btn = $(this);
+            $.ajax({
+                url: "{% url 'like_comment' 0 %}".replace('0', commentId),  // Replace 0 with commentId
+                method: "POST",
+                headers: {'X-CSRFToken': '{{ csrf_token }}'},  // CSRF protection for the POST request
+                success: function(response) {
+                    $('#like-count-' + commentId).text(response.total_likes);  // Update like count in the UI
+                    if(response.liked) {
+                        $btn.text('Unlike');  // Change button text to 'Unlike'
+                    } else {
+                        $btn.text('Like');  // Change button text to 'Like'
+                    }
+                }
+            });
+        });
+    });
+</script>
+
+{% endblock %}

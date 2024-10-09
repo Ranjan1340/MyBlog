@@ -1,0 +1,76 @@
+{% extends "blog/base.html" %}
+
+{% block content %}
+  <h2>Share "{{ post.title }}" by email</h2>
+
+  {% if sent %}
+    <p>The email has been sent successfully!</p>
+  {% else %}
+    <form method="post" class="">
+      {% csrf_token %}
+      
+      {# Only show errors if the form is bound (submitted via POST) and is invalid #}
+      {% if form.is_bound and not form.is_valid %}
+        {# If the form has non-field errors (general form errors), display them here #}
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger">
+            {{ form.non_field_errors }}
+          </div>
+        {% endif %}
+
+        {# Display field errors individually #}
+        <div class="mb-3">
+          {{ form.name.label_tag }}
+          {{ form.name }}
+          {% if form.name.errors %}
+            <div class="text-danger">{{ form.name.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="mb-3">
+          {{ form.email.label_tag }}
+          {{ form.email }}
+          {% if form.email.errors %}
+            <div class="text-danger">{{ form.email.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="mb-3">
+          {{ form.to.label_tag }}
+          {{ form.to }}
+          {% if form.to.errors %}
+            <div class="text-danger">{{ form.to.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="mb-3">
+          {{ form.comments.label_tag }}
+          {{ form.comments }}
+        </div>
+      {% else %}
+        {# Display fields without errors on first load #}
+        <div class="mb-3">
+          {{ form.name.label_tag }}
+          {{ form.name }}
+        </div>
+
+        <div class="mb-3">
+          {{ form.email.label_tag }}
+          {{ form.email }}
+        </div>
+
+        <div class="mb-3">
+          {{ form.to.label_tag }}
+          {{ form.to }}
+        </div>
+
+        <div class="mb-3">
+          {{ form.comments.label_tag }}
+          {{ form.comments }}
+        </div>
+      {% endif %}
+      
+      <button type="submit" class="btn btn-primary">Send Email</button>
+    </form>
+  {% endif %}
+{% endblock %}
